@@ -128,6 +128,24 @@ GITHUB_TOKEN=your-github-token
 ```bash
 streamlit run app_final.py
 ```
+### 6. Command-Line Workflow
+Use `agent_pipeline.py` for quick experiments without the web UI.
+
+Generate a project from docs:
+```bash
+python agent_pipeline.py generator --docs path/to/docs --project MyApp
+```
+
+Analyse an existing project:
+```bash
+python agent_pipeline.py analyzer path/to/project
+```
+
+Extend a project with new code:
+```bash
+python agent_pipeline.py coder path/to/project "add login feature"
+
+```
 
 ## 📖 Usage Guide
 
