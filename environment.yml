@@ -1,0 +1,35 @@
+name: multimodel-chatbot
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  # Scientific Computing Stack (conda-managed for compatibility)
+  - numpy=1.24.*
+  - pandas=2.0.*
+  - scikit-learn=1.3.*
+  - faiss-cpu=1.9.*
+  - sentence-transformers=5.0.*
+  # Network libraries (conda-managed for Google/Firebase compatibility)
+  - urllib3=1.26.*
+  
+  # Pip-only packages
+  - pip
+  - pip:
+    # Core Application
+    - streamlit>=1.28.0
+    - python-dotenv>=1.0.0
+    
+    # AI Model APIs
+    - google-generativeai>=0.3.0
+    - openai>=1.3.0
+    - anthropic>=0.8.0
+    - deepseek-python>=0.1.0
+    
+    # File Processing
+    - PyPDF2>=3.0.0
+    - Pillow>=10.0.0
+    - requests>=2.31.0
+    
+    # Firebase
+    - firebase-admin>=6.2.0 

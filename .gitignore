@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase (keep example, ignore actual keys)
+firebase_service_account.json
+
+# RAG Storage (keep structure, ignore user data)
+rag_storage/*.faiss
+rag_storage/*.pkl
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Generated projects (if testing)
+generated_projects/
+test_output/ .env
