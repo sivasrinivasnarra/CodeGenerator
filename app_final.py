@@ -489,38 +489,7 @@ Task: Create complete, production-ready project through structured approach
 Before generating any code, present the user with tech stack options:
 
 **STEP 1: Tech Stack Selection**
-Generate 3 specific tech stack options based on the IVR project requirements:
-
-🔧 **TECH STACK OPTIONS FOR YOUR IVR PROJECT:**
-
-**Option 1: Modern Full-Stack with FastAPI (Recommended)**
-- Backend: FastAPI (Python) + PostgreSQL + Redis + Celery
-- Frontend: React.js + Material-UI + TypeScript
-- Voice: Twilio Voice API + Speech-to-Text + Text-to-Speech
-- AI/NLP: OpenAI GPT API + LangChain
-- Deployment: Docker + Docker Compose + nginx
-- Pros: Modern, scalable, excellent async support, great for AI integration
-- Cons: Requires Node.js and Python, more complex setup
-
-**Option 2: Python-Only Stack with Django (Recommended for IVR)**
-- Backend: Django + PostgreSQL + Django Channels (WebSockets)
-- Frontend: Django Templates + Bootstrap + HTMX
-- Voice: Twilio Voice API + Django REST Framework
-- AI/NLP: OpenAI GPT API + Django integration
-- Deployment: Docker + Gunicorn + nginx
-- Pros: Single language, excellent for telephony systems, robust admin panel
-- Cons: Less modern frontend experience, monolithic architecture
-
-**Option 3: Microservices Stack with Flask**
-- Backend: Flask + SQLAlchemy + PostgreSQL + Redis
-- Frontend: Vue.js + Vuetify
-- Voice: Twilio Voice API + Flask-RESTful
-- AI/NLP: OpenAI GPT API + Flask integration
-- Deployment: Docker Swarm + nginx
-- Pros: Lightweight, microservices ready, flexible
-- Cons: More setup required, less built-in features
-
-Please choose your preferred tech stack (1, 2, or 3) or specify custom requirements.
+Use the **TECH STACK OPTIONS FOR YOUR PROJECT** section to present three stack choices tailored to the project requirements. Ask the user to select an option or provide custom preferences.
 
 **STEP 2: Project Structure Planning**
 After tech stack selection, create a complete project structure and ask for confirmation.
