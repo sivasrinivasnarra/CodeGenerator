@@ -980,7 +980,7 @@ def chat_ui():
             "gpt-3.5-turbo": "GPT-3.5 Turbo"
         }
         selected_model = st.session_state.get("selected_model", "gemini-2.5-pro")
-        selected_agent = st.session_state.get("selected_agent", "💬 General Assistant")
+        selected_agent = st.session_state.get("selected_agent", "🚀 Project Generator")
         model_display = model_dict.get(selected_model, selected_model)
         st.markdown(f"<div style='background:#f5f6fa;padding:10px 16px;border-radius:8px;margin-bottom:8px;'><b>Model:</b> {model_display} &nbsp; | &nbsp; <b>Agent:</b> {selected_agent}</div>", unsafe_allow_html=True)
 

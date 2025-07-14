@@ -14,14 +14,10 @@ A comprehensive AI-powered development environment that combines multi-model cha
 ### 📊 **Intelligent Project Analysis**
 - **Basic Analysis**: Works with Gemini for immediate insights
 - **Advanced RAG System**: Semantic search across codebases (optional)
-- **AI Agent Orchestra**: 7 specialized analysis agents
+ - **AI Agent Orchestra**: 3 specialized agents
+  - 🚀 Project Generator - Create complete projects from docs or prompts
   - 🔍 Project Analyzer - Architecture and structure analysis
-  - 👨‍💻 Code Reviewer - Quality and best practices audit
-  - 📚 Documentation Generator - Auto-generate comprehensive docs
-  - 🛡️ Security Auditor - Vulnerability and security analysis
-  - 🏗️ Architecture Analyst - Design patterns and structure review
-  - 📦 Dependency Manager - Package and dependency analysis
-  - 🧪 Test Generator - Test case and coverage suggestions
+  - 🛠️ Code Assistant - Extend existing projects with new features
 
 ### 🚀 **Full Project Generator** ⭐ NEW!
 - **Complete Project Creation**: Generate entire projects from descriptions or documentation
@@ -263,7 +259,7 @@ python agent_pipeline.py coder path/to/project "add login feature"
 
 ### Adding New Features
 - **New AI Models**: Add to model utilities and update model_adapter.py
-- **New Agents**: Extend ai_agents.py with new specialized agents
+ - **New Agents**: Customize `generate_agent_response` in `app_final.py` to add new specialized agents
 - **New Platforms**: Add to git_repository_integration.py
 
 ## 📄 License
