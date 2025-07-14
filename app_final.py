@@ -4,7 +4,7 @@ from firebase_utils import (
     list_user_chats, create_new_chat, get_chat_history, add_message_to_chat, set_chat_title
 )
 from gemini_utils import generate_gemini_response
-from openai_utils import generate_openai_response, generate_dalle_image
+from openai_utils import generate_openai_response
 from dotenv import load_dotenv
 import os
 from streamlit.components.v1 import html
@@ -474,107 +474,16 @@ def generate_agent_response(prompt, agent_type, model_name, rag_context=None, fi
         
         # Enhanced system instruction for comprehensive project generation (first-time or major requests)
         if st.session_state.project_context.get('indexed') and context_info and not (is_followup and is_followup_request) and not is_simple_request:
-            context_prompt = f"""🚀 SYSTEMATIC PROJECT GENERATOR - Interactive & Complete
+            context_prompt = f"""
+You are a senior full-stack developer.
 
-Role: Senior Full-Stack Developer & Project Architect
-Task: Create complete, production-ready project through structured approach
-
-**UPLOADED REQUIREMENTS:**
+**Uploaded Requirements**
 {context_info}
 
-**USER REQUEST:** {prompt}
+**User Request**: {prompt}
 
-**SYSTEMATIC APPROACH - PHASE 1: TECH STACK CLARIFICATION**
-
-Before generating any code, present the user with tech stack options:
-
-**STEP 1: Tech Stack Selection**
-Use the **TECH STACK OPTIONS FOR YOUR PROJECT** section to present three stack choices tailored to the project requirements. Ask the user to select an option or provide custom preferences.
-
-**STEP 2: Project Structure Planning**
-After tech stack selection, create a complete project structure and ask for confirmation.
-
-**STEP 3: Systematic File Generation**
-Generate files in logical groups:
-
-**Group 1: Core Backend Files (Start Here)**
-- Main application entry point
-- Database models and configuration
-- Core API endpoints
-- Basic services
-
-Ask user: "Continue with Group 2 (Additional Backend)?" before proceeding.
-
-**Group 2: Additional Backend**
-- Authentication and middleware
-- Utility functions and helpers
-- Advanced services
-- Error handling
-
-Ask user: "Continue with Group 3 (Frontend)?" before proceeding.
-
-**Group 3: Frontend Files**
-- Main application components
-- UI components and pages
-- API integration
-- Styling and assets
-
-Ask user: "Continue with Group 4 (Configuration)?" before proceeding.
-
-**Group 4: Configuration & Deployment**
-- Docker files
-- Environment configurations
-- Requirements/dependencies
-- CI/CD files
-
-Ask user: "Continue with Group 5 (Documentation & Testing)?" before proceeding.
-
-**Group 5: Documentation & Testing**
-- README with setup instructions
-- API documentation
-- Unit tests
-- Sample data
-
-**FINAL STEPS:**
-- Provide startup instructions (which file to run)
-- Ask if user needs additional files not in original structure
-- Offer to create any missing files
-
-**IMPLEMENTATION RULES:**
-✅ Generate complete, working code with full implementations
-✅ Include ALL imports, dependencies, error handling
-✅ Make code production-ready and immediately deployable
-❌ NEVER use placeholders or "TODO" comments
-❌ NEVER provide skeleton code
-
-**COMMUNICATION STYLE:**
-🎯 **MINIMAL TEXT EXPLANATIONS** - Keep explanations brief and concise
-🎨 **PRIORITIZE VISUALS** - Use Mermaid diagrams, flowcharts, and ASCII art when explanation is needed
-📊 **DEFAULT VISUAL APPROACH**:
-  - Tech stack options: Simple comparison table
-  - Project structure: ASCII tree diagram
-  - Architecture: Mermaid flowchart
-  - File relationships: Mermaid diagram
-  - Process flows: Mermaid sequence diagrams
-
-📝 **DETAILED EXPLANATIONS ONLY WHEN REQUESTED**:
-  - If user asks "explain", "how does this work", "show me details"
-  - Then provide comprehensive text + multiple visual aids
-  - Include architecture diagrams, data flow charts, component relationships
-  - Add code comments and detailed documentation
-
-**VISUAL EXAMPLES TO USE:**
-```mermaid
-graph TD
-    A[User Request] --> B[Tech Stack Selection]
-    B --> C[Project Structure]
-    C --> D[Group 1: Core Backend]
-    D --> E[Group 2: Additional Backend]
-```
-
-**CRITICAL: DISPLAY THE ACTUAL TECH STACK OPTIONS ABOVE - DO NOT TREAT THEM AS EXAMPLES**
-
-**START WITH TECH STACK CLARIFICATION NOW - SHOW THE 3 OPTIONS EXACTLY AS WRITTEN ABOVE.**"""
+Suggest an appropriate tech stack if not specified. Show the planned file structure and then generate a complete, production-ready project with code, configuration and documentation.
+"""
         elif is_followup and is_followup_request:
             # Enhanced follow-up for systematic project generation
             # Check if this is part of the systematic generation process
@@ -587,63 +496,15 @@ graph TD
             is_systematic_continuation = any(keyword in prompt.lower() for keyword in systematic_keywords)
             
             if is_systematic_continuation:
-                context_prompt = f"""🚀 SYSTEMATIC PROJECT GENERATOR - CONTINUATION
+                context_prompt = f"""
+You are continuing the project generation process.
 
-You are continuing the systematic project generation process.
-
-**PREVIOUS CONVERSATION:**
+**Previous Conversation:**
 {chr(10).join([f"{msg.get('role', 'user').upper()}: {msg.get('content', '')[:500]}..." for msg in st.session_state.chat_history[-6:]])}
 
-**CURRENT REQUEST:** {prompt}
+**Current Request**: {prompt}
 
-**INSTRUCTIONS:**
-- If user selected "option 1", "option 2", "option 3", or any tech stack choice, immediately proceed to project structure planning
-- If user selected Django (option 2), create Django-based project structure with templates and SQLite
-- If user selected FastAPI (option 1), create FastAPI + React project structure  
-- If user selected Flask (option 3), create Flask-based project structure
-- After showing project structure, ask "Confirm this structure to proceed with Group 1 (Core Backend Files)?"
-- If user confirmed project structure, start generating Group 1 files immediately
-- If user asks to continue with next group, generate that specific group of files
-- If user asks for missing files, identify what's missing and generate them
-- If user asks for startup instructions, provide clear run commands
-
-**TECH STACK RECOGNITION:**
-- "option 2" or "2" = Django + SQLite/PostgreSQL + Django Templates + Bootstrap
-- "option 1" or "1" = FastAPI + PostgreSQL + React.js + Material-UI  
-- "option 3" or "3" = Flask + MySQL + HTML/CSS + jQuery
-
-**SYSTEMATIC GENERATION RULES:**
-- Generate complete, working code for each file
-- Include proper imports, error handling, and documentation
-- After each group, clearly state what was generated and ask about next group
-- Keep track of generated files vs remaining files
-- At the end, provide startup instructions and ask about additional files
-
-**COMMUNICATION STYLE:**
-🎯 **MINIMAL TEXT** - Brief explanations only
-🎨 **VISUAL FIRST** - Use Mermaid diagrams for:
-  - Project structure updates
-  - File relationships
-  - Progress tracking
-  - Architecture overviews
-
-📊 **PROGRESS TRACKING FORMAT:**
-```mermaid
-graph LR
-    A[✅ Group 1] --> B[🔄 Group 2] --> C[⏳ Group 3] --> D[⏳ Group 4]
-```
-
-**CURRENT PHASE:** Determine from conversation context and proceed accordingly.
-
-**IMMEDIATE ACTION REQUIRED:**
-If the user just selected a tech stack option (like "option 2"), you MUST:
-1. Acknowledge their choice (e.g., "Great! You selected Django stack...")
-2. Immediately create and display the complete project structure for that tech stack
-3. Use ASCII tree format for the project structure
-4. Ask for confirmation to proceed with Group 1 generation
-5. Do NOT give generic responses - proceed with the systematic generation
-
-**GENERATE THE REQUESTED FILES/INFORMATION NOW - USE VISUAL FORMAT.**
+Follow the previously chosen tech stack and generate the requested code or updates.
 """
             else:
                 # Regular follow-up conversation
@@ -771,135 +632,13 @@ You are a helpful senior developer assistant.
 **RESPOND TO:** {prompt}
 """
         else:
-            context_prompt = f"""🚀 SYSTEMATIC PROJECT GENERATOR - Interactive & Complete
+            context_prompt = f"""
+You are a senior full-stack developer.
 
-Role: Senior Full-Stack Developer & Project Architect
-Task: Create complete, production-ready project through structured approach
+**Project Request**: {prompt}
 
-**PROJECT REQUEST:** {prompt}
-
-**SYSTEMATIC APPROACH - PHASE 1: TECH STACK CLARIFICATION**
-
-Before generating any code, present the user with tech stack options:
-
-**STEP 1: Tech Stack Selection**
-Based on the project description, generate 3 specific tech stack options:
-
-🔧 **TECH STACK OPTIONS FOR YOUR PROJECT:**
-
-**Option 1: Modern Full-Stack with FastAPI (Recommended)**
-- Backend: FastAPI (Python) + PostgreSQL + Redis + Celery
-- Frontend: React.js + Material-UI + TypeScript
-- APIs: RESTful + WebSocket support
-- Authentication: JWT + OAuth2
-- Deployment: Docker + Docker Compose + nginx
-- Pros: Modern, scalable, excellent async support, fast development
-- Cons: Requires Node.js and Python, more complex setup
-
-**Option 2: Python-Only Stack with Django**
-- Backend: Django + PostgreSQL + Django Channels
-- Frontend: Django Templates + Bootstrap + HTMX
-- APIs: Django REST Framework
-- Authentication: Django built-in authentication
-- Deployment: Docker + Gunicorn + nginx
-- Pros: Single language, rapid development, robust admin panel
-- Cons: Less modern frontend experience, monolithic architecture
-
-**Option 3: Lightweight Stack with Flask**
-- Backend: Flask + SQLAlchemy + PostgreSQL + Redis
-- Frontend: Vue.js + Vuetify
-- APIs: Flask-RESTful + Flask-SocketIO
-- Authentication: Flask-Login + JWT
-- Deployment: Docker + nginx
-- Pros: Lightweight, flexible, microservices ready
-- Cons: More manual setup, fewer built-in features
-
-Please choose your preferred tech stack (1, 2, or 3) or specify custom requirements.
-
-**STEP 2: Project Structure Planning**
-After tech stack selection, create a complete project structure and ask for confirmation.
-
-**STEP 3: Systematic File Generation**
-Generate files in logical groups:
-
-**Group 1: Core Backend Files (Start Here)**
-- Main application entry point
-- Database models and configuration
-- Core API endpoints
-- Basic services
-
-Ask user: "Continue with Group 2 (Additional Backend)?" before proceeding.
-
-**Group 2: Additional Backend**
-- Authentication and middleware
-- Utility functions and helpers
-- Advanced services
-- Error handling
-
-Ask user: "Continue with Group 3 (Frontend)?" before proceeding.
-
-**Group 3: Frontend Files**
-- Main application components
-- UI components and pages
-- API integration
-- Styling and assets
-
-Ask user: "Continue with Group 4 (Configuration)?" before proceeding.
-
-**Group 4: Configuration & Deployment**
-- Docker files
-- Environment configurations
-- Requirements/dependencies
-- CI/CD files
-
-Ask user: "Continue with Group 5 (Documentation & Testing)?" before proceeding.
-
-**Group 5: Documentation & Testing**
-- README with setup instructions
-- API documentation
-- Unit tests
-- Sample data
-
-**FINAL STEPS:**
-- Provide startup instructions (which file to run)
-- Ask if user needs additional files not in original structure
-- Offer to create any missing files
-
-**IMPLEMENTATION RULES:**
-✅ Generate complete, working code with full implementations
-✅ Include ALL imports, dependencies, error handling
-✅ Make code production-ready and immediately deployable
-❌ NEVER use placeholders or "TODO" comments
-❌ NEVER provide skeleton code
-
-**COMMUNICATION STYLE:**
-🎯 **MINIMAL TEXT EXPLANATIONS** - Keep explanations brief and concise
-🎨 **PRIORITIZE VISUALS** - Use Mermaid diagrams, flowcharts, and ASCII art when explanation is needed
-📊 **DEFAULT VISUAL APPROACH**:
-  - Tech stack options: Simple comparison table
-  - Project structure: ASCII tree diagram
-  - Architecture: Mermaid flowchart
-  - File relationships: Mermaid diagram
-  - Process flows: Mermaid sequence diagrams
-
-📝 **DETAILED EXPLANATIONS ONLY WHEN REQUESTED**:
-  - If user asks "explain", "how does this work", "show me details"
-  - Then provide comprehensive text + multiple visual aids
-  - Include architecture diagrams, data flow charts, component relationships
-  - Add code comments and detailed documentation
-
-**VISUAL EXAMPLES TO USE:**
-```mermaid
-graph TD
-    A[User Request] --> B[Tech Stack Selection]
-    B --> C[Project Structure]
-    C --> D[Group 1: Core Backend]
-    D --> E[Group 2: Additional Backend]
-```
-
-**CRITICAL: DISPLAY THE ACTUAL TECH STACK OPTIONS ABOVE - DO NOT TREAT THEM AS EXAMPLES**
-
-**START WITH TECH STACK CLARIFICATION NOW - SHOW THE 3 OPTIONS EXACTLY AS WRITTEN ABOVE.**"""
+Clarify the desired tech stack if needed, outline the project structure, then generate all necessary code, configuration and documentation for a production-ready application.
+"""
     
     elif agent_type == "🔍 Project Analyzer":
         if st.session_state.project_context.get('indexed'):
@@ -1006,176 +745,6 @@ For now, I can provide general development guidance:
 Provide actionable feedback and best practices.
 """
     
-    elif agent_type == "🛡️ Security Auditor":
-        if st.session_state.project_context.get('indexed'):
-            context_prompt = f"""
-As a Cybersecurity Expert, perform security audit of the uploaded project for: {prompt}
-
-{context_info}
-
-Check the ACTUAL uploaded project files above for:
-1. **Vulnerabilities**: SQL injection, XSS, CSRF, etc. in the specific code
-2. **Authentication**: Secure user verification in the uploaded project
-3. **Authorization**: Proper access controls in the codebase
-4. **Data Protection**: Sensitive information handling in the files
-5. **Input Validation**: Data sanitization in the actual code
-6. **Dependencies**: Known vulnerable packages in the project
-
-Rate findings as CRITICAL, HIGH, MEDIUM, LOW with specific remediation steps for this project.
-"""
-        else:
-            context_prompt = f"""
-As a Cybersecurity Expert, perform security audit for: {prompt}
-
-{context_info}
-
-Note: No project files uploaded. For specific security audit, please upload your project files first.
-
-Provide general security guidance on:
-1. **Vulnerabilities**: Common types like SQL injection, XSS, CSRF
-2. **Authentication**: Best practices for secure user verification
-3. **Authorization**: Proper access control principles
-4. **Data Protection**: Sensitive information handling guidelines
-5. **Input Validation**: Data sanitization best practices
-6. **Dependencies**: Package security management
-
-Rate findings as CRITICAL, HIGH, MEDIUM, LOW with general remediation steps.
-"""
-    
-    elif agent_type == "📚 Documentation Generator":
-        if st.session_state.project_context.get('indexed'):
-            context_prompt = f"""
-As a Technical Writer, generate comprehensive documentation for the uploaded project: {prompt}
-
-{context_info}
-
-Create professional documentation based on the ACTUAL uploaded project files above:
-1. **Project Overview**: Purpose and description based on the uploaded code
-2. **Features**: Key functionality found in the uploaded files
-3. **Installation**: Setup instructions based on the project structure
-4. **Usage**: Examples from the actual codebase
-5. **API Documentation**: Based on the uploaded code (if applicable)
-6. **Configuration**: Environment variables and settings found in the files
-
-Use proper Markdown formatting and base content on the uploaded project.
-"""
-        else:
-            context_prompt = f"""
-You are a Technical Documentation Expert. Create COMPREHENSIVE, PROFESSIONAL documentation for: {prompt}
-
-{context_info}
-
-GENERATE COMPLETE DOCUMENTATION INCLUDING:
-
-1. **Project Overview**: Detailed purpose, description, and value proposition
-2. **Features**: Complete list of functionality and capabilities
-3. **Installation**: Step-by-step setup instructions with all requirements
-4. **Usage Guide**: Detailed examples and common use cases with code samples
-5. **API Documentation**: Complete endpoints, parameters, and responses (if applicable)
-6. **Configuration**: Environment variables, settings, and customization options
-7. **Troubleshooting**: Common issues and solutions
-8. **Contributing**: Guidelines for contributors
-9. **License**: Licensing information
-
-REQUIREMENTS:
-- Use proper Markdown formatting with headers, code blocks, and lists
-- Include working code examples and command-line instructions
-- Provide complete, copy-paste ready configurations
-- Create a professional README that stands alone
-- Be thorough and comprehensive - generate FULL documentation
-- Include badges, links, and professional formatting
-
-Generate the complete documentation now for: {prompt}
-"""
-    
-    elif agent_type == "🏗️ Architecture Analyst":
-        if st.session_state.project_context.get('indexed'):
-            context_prompt = f"""
-As a Software Architecture Expert, analyze the system architecture of the uploaded project for: {prompt}
-
-{context_info}
-
-Provide detailed analysis based on the ACTUAL uploaded project files above:
-1. **Architectural Patterns**: Design patterns found in the uploaded code
-2. **System Design**: Component interactions and data flow in the project
-3. **Scalability Analysis**: Current and future scaling considerations for this project
-4. **Technology Choices**: Evaluation of tech stack decisions in the uploaded code
-5. **Modularity**: Code organization and separation of concerns in the files
-6. **Performance**: Architectural impact on performance in this specific project
-7. **Recommendations**: Architectural improvements for this project
-
-Be detailed and provide specific insights based on the uploaded codebase.
-"""
-        else:
-            context_prompt = f"""
-As a Software Architecture Expert, analyze the system architecture for: {prompt}
-
-{context_info}
-
-Note: No project files uploaded. For specific architecture analysis, please upload your project files first.
-
-Provide general architectural guidance on:
-1. **Architectural Patterns**: Common design patterns and their applications
-2. **System Design**: General component interaction principles
-3. **Scalability Analysis**: General scaling considerations
-4. **Technology Choices**: Framework and technology selection principles
-5. **Modularity**: Code organization best practices
-6. **Performance**: Architectural performance principles
-7. **Recommendations**: General architectural improvements
-
-Be detailed and provide general architectural insights.
-"""
-    
-    elif agent_type == "🚀 Full Project Generator":
-        if not PROJECT_GENERATOR_AVAILABLE:
-            context_prompt = f"""
-I apologize, but the Full Project Generator is not currently available. The required modules for project generation could not be loaded.
-
-However, I can still help you with:
-- Code generation and snippets
-- Project architecture planning
-- Technology stack recommendations
-- Best practices and guidelines
-
-Please try one of the other available agents, or ask me to help you with specific code generation tasks.
-
-Your request: {prompt}
-"""
-        else:
-            # Special handling for project generation - DIRECTIVE PROMPT
-            context_prompt = f"""
-You are a Full-Stack Senior Developer tasked with creating a COMPLETE, PRODUCTION-READY project. You MUST generate actual working code files, not just descriptions or explanations.
-
-PROJECT REQUEST: {prompt}
-
-{context_info}
-
-CRITICAL INSTRUCTIONS:
-- Generate COMPLETE source code files with full implementations
-- Create WORKING code that can be run immediately after setup
-- Include ALL necessary imports, dependencies, and configurations
-- Provide PRODUCTION-QUALITY code with proper error handling
-- Generate comprehensive file structures with real, functional code
-- Create actual test files with working test cases
-- Include complete setup instructions and requirements
-
-REQUIRED OUTPUT FORMAT:
-1. **Project Architecture**: Brief overview of the structure
-2. **Complete File Structure**: Show the full directory tree
-3. **SOURCE CODE FILES**: Provide complete, working code for ALL files
-4. **Dependencies**: List all required packages and versions
-5. **Setup Instructions**: Step-by-step installation and run instructions
-6. **Example Usage**: Working examples and API endpoints (if applicable)
-
-IMPORTANT: 
-- Do NOT say "I cannot provide" or "this would require significant effort"
-- Do NOT provide skeletal structures or incomplete code
-- DO provide complete, working, production-ready implementations
-- Generate ACTUAL code files that work out of the box
-- Be comprehensive and thorough in your implementation
-
-Generate the complete project now based on the request: {prompt}
-"""
     
     else:
         context_prompt = f"{context_info}\n{prompt}"
