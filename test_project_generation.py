@@ -7,6 +7,13 @@ import json
 import zipfile
 from io import BytesIO
 from datetime import datetime
+import pytest
+
+
+@pytest.fixture
+def files():
+    """Fixture providing the extracted file dictionary."""
+    return test_file_extraction()
 
 def test_file_extraction():
     """Test the file extraction function"""
