@@ -3299,7 +3299,125 @@ Group 4: Deployment & DevOps
                             response += f"- 'I want to modify [specific part]'\n"
                             response += f"- 'Can you explain [aspect]?'\n\n"
                             response += f"**File Groups:** {len(file_groups)} groups ready for generation"
-                    
+
+                    elif any(keyword in prompt.lower() for keyword in ["yes", "proceed", "confirm", "ok", "good", "continue"]):
+                        # User confirmed proceeding with previously validated custom tech stack
+                        description = st.session_state.project_generation_state.get("selected_tech_stack")
+                        if description:
+                            st.session_state.project_generation_state["workflow_step"] = "architecture_review"
+
+                            # Generate architecture
+                            try:
+                                with st.spinner("🏗️ Designing project architecture..."):
+                                    architecture = generate_project_architecture(
+                                        st.session_state.project_generation_state["requirements"],
+                                        description
+                                    )
+
+                                # Check if architecture generation failed
+                                if not architecture or "error" in architecture.lower() or "500" in architecture:
+                                    st.warning("⚠️ Architecture generation encountered an issue. Using default structure.")
+                                    architecture = f"""
+PROJECT ARCHITECTURE OVERVIEW:
+Standard project structure for {description}
+
+FILE STRUCTURE:
+```
+project-name/
+├── src/
+│   ├── main.py
+│   ├── app.py
+│   ├── config.py
+│   └── utils.py
+├── tests/
+├── docs/
+├── requirements.txt
+├── README.md
+└── .env.example
+```
+
+FILE GROUPS FOR GENERATION:
+Group 1: Core Application Files
+- src/main.py
+- src/app.py
+- src/config.py
+- src/utils.py
+
+Group 2: Configuration & Setup
+- requirements.txt
+- README.md
+- .env.example
+- .gitignore
+
+Group 3: Documentation & Tests
+- tests/test_main.py
+- docs/README.md
+
+Group 4: Deployment & DevOps
+- Dockerfile
+- docker-compose.yml
+"""
+
+                                st.session_state.project_generation_state["project_architecture"] = architecture
+
+                                # Parse file groups
+                                file_groups = parse_file_groups_from_architecture(architecture)
+                                st.session_state.project_generation_state["file_groups"] = file_groups
+
+                            except Exception as e:
+                                st.error(f"❌ Error generating architecture: {str(e)}")
+                                # Use default architecture
+                                architecture = f"""
+PROJECT ARCHITECTURE OVERVIEW:
+Standard project structure for {description}
+
+FILE STRUCTURE:
+```
+project-name/
+├── src/
+│   ├── main.py
+│   ├── app.py
+│   ├── config.py
+│   └── utils.py
+├── tests/
+├── docs/
+├── requirements.txt
+├── README.md
+└── .env.example
+```
+
+FILE GROUPS FOR GENERATION:
+Group 1: Core Application Files
+- src/main.py
+- src/app.py
+- src/config.py
+- src/utils.py
+
+Group 2: Configuration & Setup
+- requirements.txt
+- README.md
+- .env.example
+- .gitignore
+
+Group 3: Documentation & Tests
+- tests/test_main.py
+- docs/README.md
+
+Group 4: Deployment & DevOps
+- Dockerfile
+- docker-compose.yml
+"""
+                                st.session_state.project_generation_state["project_architecture"] = architecture
+                                file_groups = create_default_file_groups()
+                                st.session_state.project_generation_state["file_groups"] = file_groups
+
+                            response = f"🏗️ **Step 2: Project Architecture**\n\n{architecture}\n\n"
+                            response += f"**Next Step:** Please confirm the architecture:\n"
+                            response += f"- 'Yes, proceed with this architecture'\n"
+                            response += f"- 'I want to modify [specific part]'\n"
+                            response += f"- 'Can you explain [aspect]?'\n\n"
+                            response += f"**File Groups:** {len(file_groups)} groups ready for generation"
+
                     elif any(keyword in prompt.lower() for keyword in ["react", "node", "python", "java", "django", "flask", "mongodb", "postgresql", "mysql", "typescript", "javascript", "vue", "angular", "spring", "express", "fastapi", "sqlite", "redis", "docker", "kubernetes"]):
                         # User provided custom tech stack
                         with st.spinner("🔍 Validating custom tech stack..."):
