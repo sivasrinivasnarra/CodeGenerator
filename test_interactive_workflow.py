@@ -140,6 +140,34 @@ def test_file_group_parsing():
         print(f"❌ File group parsing failed: {e}")
         return False
 
+def test_parse_tech_stack_options():
+    """Test parsing of tech stack options."""
+    print("🧪 Testing Tech Stack Option Parsing...")
+
+    sample_text = """
+TECH STACK OPTIONS:
+
+Option 1: Modern - React/Node
+- Frontend: React
+- Backend: Node.js
+
+Option 2: Enterprise - Java Spring
+- Frontend: Thymeleaf
+- Backend: Spring Boot
+
+RECOMMENDATION: Option 1
+"""
+
+    try:
+        from app_final import parse_tech_stack_options
+        result = parse_tech_stack_options(sample_text)
+        assert isinstance(result, dict) and "Option 1" in result and "Option 2" in result
+        print("✅ Tech stack option parsing works")
+        return True
+    except Exception as e:
+        print(f"❌ Tech stack option parsing failed: {e}")
+        return False
+
 def test_workflow_state_management():
     """Test the workflow state management."""
     print("🧪 Testing Workflow State Management...")
@@ -148,8 +176,8 @@ def test_workflow_state_management():
     project_generation_state = {
         "workflow_step": "initial",
         "requirements": "",
-        "suggested_tech_stack": [],
-        "selected_tech_stack": [],
+        "suggested_tech_stack": {},
+        "selected_tech_stack": "",
         "project_architecture": "",
         "file_groups": [],
         "current_group_index": 0,
@@ -174,6 +202,7 @@ def main():
         test_architecture_generation,
         test_file_group_generation,
         test_file_group_parsing,
+        test_parse_tech_stack_options,
         test_workflow_state_management
     ]
     

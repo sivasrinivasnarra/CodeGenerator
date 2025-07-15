@@ -84,8 +84,8 @@ if "project_generation_state" not in st.session_state:
         # New interactive workflow states
         "workflow_step": "initial",  # initial, tech_stack_selection, architecture_review, group_generation, complete
         "requirements": "",
-        "suggested_tech_stack": [],
-        "selected_tech_stack": [],
+        "suggested_tech_stack": {},
+        "selected_tech_stack": "",
         "project_architecture": "",
         "file_groups": [],
         "current_group_index": 0,
@@ -395,8 +395,8 @@ def reset_session_for_new_chat():
         # New interactive workflow states
         "workflow_step": "initial",  # initial, tech_stack_selection, architecture_review, group_generation, complete
         "requirements": "",
-        "suggested_tech_stack": [],
-        "selected_tech_stack": [],
+        "suggested_tech_stack": {},
+        "selected_tech_stack": "",
         "project_architecture": "",
         "file_groups": [],
         "current_group_index": 0,
@@ -1009,6 +1009,25 @@ Provide concise, focused recommendations.
         return generate_gemini_response([{"role": "user", "content": analysis_prompt}], model_name=selected_model)
     else:
         return generate_openai_response([{"role": "user", "content": analysis_prompt}], model_name=selected_model)
+
+def parse_tech_stack_options(analysis_text):
+    """Extract each 'Option N:' block from the analysis text."""
+    import re
+
+    options = {}
+    if not analysis_text:
+        return options
+
+    pattern = r"(Option\s+\d+:[\s\S]*?)(?=Option\s+\d+:|RECOMMENDATION:|$)"
+    matches = re.findall(pattern, analysis_text, re.IGNORECASE)
+
+    for block in matches:
+        head_match = re.match(r"Option\s+\d+", block, re.IGNORECASE)
+        if head_match:
+            key = head_match.group(0).title()
+            options[key] = block.strip()
+
+    return options
 
 def validate_custom_tech_stack(custom_tech_stack, requirements):
     """Validate if the custom tech stack is feasible for the requirements."""
@@ -2782,8 +2801,8 @@ def chat_ui():
                         # Reset interactive workflow states
                         "workflow_step": "initial",
                         "requirements": "",
-                        "suggested_tech_stack": [],
-                        "selected_tech_stack": [],
+                        "suggested_tech_stack": {},
+                        "selected_tech_stack": "",
                         "project_architecture": "",
                         "file_groups": [],
                         "current_group_index": 0,
@@ -3126,10 +3145,19 @@ def chat_ui():
                     
                     with st.spinner("🔍 Analyzing requirements and suggesting tech stack..."):
                         tech_analysis = analyze_requirements_and_suggest_tech_stack(prompt, requirements_text)
-                    
+
+                    # Parse options
+                    try:
+                        options_map = parse_tech_stack_options(tech_analysis)
+                    except Exception:
+                        options_map = {}
+
                     # Update workflow state
                     st.session_state.project_generation_state["workflow_step"] = "tech_stack_selection"
-                    st.session_state.project_generation_state["suggested_tech_stack"] = tech_analysis
+                    if options_map:
+                        st.session_state.project_generation_state["suggested_tech_stack"] = options_map
+                    else:
+                        st.session_state.project_generation_state["suggested_tech_stack"] = tech_analysis
                     
                     # Add tech stack analysis to response
                     response = f"🎯 **Step 1: Tech Stack Analysis**\n\n{tech_analysis}\n\n"
@@ -3151,7 +3179,13 @@ def chat_ui():
                             selected_option = "Option 3"
                         
                         if selected_option:
-                            st.session_state.project_generation_state["selected_tech_stack"] = selected_option
+                            options_map = st.session_state.project_generation_state.get("suggested_tech_stack", {})
+                            if isinstance(options_map, dict):
+                                description = options_map.get(selected_option, selected_option)
+                            else:
+                                description = selected_option
+
+                            st.session_state.project_generation_state["selected_tech_stack"] = description
                             st.session_state.project_generation_state["workflow_step"] = "architecture_review"
                             
                             # Generate architecture
@@ -3159,7 +3193,7 @@ def chat_ui():
                                 with st.spinner("🏗️ Designing project architecture..."):
                                     architecture = generate_project_architecture(
                                         st.session_state.project_generation_state["requirements"],
-                                        selected_option
+                                        description
                                     )
                                 
                                 # Check if architecture generation failed
@@ -3167,7 +3201,7 @@ def chat_ui():
                                     st.warning("⚠️ Architecture generation encountered an issue. Using default structure.")
                                     architecture = f"""
 PROJECT ARCHITECTURE OVERVIEW:
-Standard project structure for {selected_option}
+Standard project structure for {description}
 
 FILE STRUCTURE:
 ```
@@ -3217,7 +3251,7 @@ Group 4: Deployment & DevOps
                                 # Use default architecture
                                 architecture = f"""
 PROJECT ARCHITECTURE OVERVIEW:
-Standard project structure for {selected_option}
+Standard project structure for {description}
 
 FILE STRUCTURE:
 ```
@@ -3580,8 +3614,8 @@ For each file:
                             "zip_data": None,
                             "workflow_step": "initial",
                             "requirements": "",
-                            "suggested_tech_stack": [],
-                            "selected_tech_stack": [],
+                            "suggested_tech_stack": {},
+                            "selected_tech_stack": "",
                             "project_architecture": "",
                             "file_groups": [],
                             "current_group_index": 0,
