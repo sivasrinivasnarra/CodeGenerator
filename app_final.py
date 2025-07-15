@@ -91,7 +91,8 @@ if "project_generation_state" not in st.session_state:
         "current_group_index": 0,
         "generated_groups": [],
         "user_confirmations": {},
-        "project_description": ""
+        "project_description": "",
+        "context_info": ""
     }
 if "project_generation_history" not in st.session_state:
     st.session_state.project_generation_history = []
@@ -351,6 +352,27 @@ def restore_chat_context(user_id, chat_id):
     
     return False
 
+def build_context_info(rag_context=None):
+    """Build context information string from uploaded files or RAG results."""
+    context_info = ""
+    try:
+        if st.session_state.project_context.get('indexed'):
+            files_dict = st.session_state.project_context.get('files', {})
+            if files_dict:
+                project_files = []
+                for filename, content in files_dict.items():
+                    truncated_content = content[:2000] + "..." if len(content) > 2000 else content
+                    project_files.append(f"📄 **{filename}**:\n```\n{truncated_content}\n```")
+                context_info = "\n🔍 **UPLOADED PROJECT FILES**:\n\n" + "\n\n---\n\n".join(project_files) + "\n"
+        if not context_info and rag_context:
+            context_files = "\n".join([
+                f"File: {r['file']}\nContent: {r['content'][:800]}..." for r in rag_context
+            ])
+            context_info = f"\nRELEVANT PROJECT CONTEXT (from RAG):\n{context_files}\n"
+    except Exception:
+        context_info = ""
+    return context_info
+
 def reset_session_for_new_chat():
     """Reset all session state for a completely fresh chat"""
     # Clear project context completely
@@ -402,7 +424,8 @@ def reset_session_for_new_chat():
         "current_group_index": 0,
         "generated_groups": [],
         "user_confirmations": {},
-        "project_description": ""
+        "project_description": "",
+        "context_info": ""
     }
     st.session_state.project_generation_history = []
 
@@ -962,13 +985,12 @@ Provide actionable feedback and best practices.
 
 def analyze_requirements_and_suggest_tech_stack(prompt, context_info):
     """Analyze requirements and suggest appropriate tech stack."""
+    full_context = f"{prompt}\n\n{context_info}" if context_info else prompt
     analysis_prompt = f"""
 You are a senior software architect analyzing project requirements.
 
-**PROJECT REQUIREMENTS:**
-{context_info}
-
-**USER REQUEST:** {prompt}
+**PROJECT DETAILS:**
+{full_context}
 
 **TASK:** Analyze the requirements and suggest the most appropriate technology stack.
 
@@ -1063,16 +1085,17 @@ Provide honest, thorough evaluation with specific recommendations.
     else:
         return generate_openai_response([{"role": "user", "content": validation_prompt}], model_name=selected_model)
 
-def generate_project_architecture(requirements, tech_stack):
+def generate_project_architecture(requirements, tech_stack, context_info=""):
     """Generate detailed project architecture and file structure."""
     # Truncate requirements to avoid large requests
     truncated_requirements = requirements[:1000] + "..." if len(requirements) > 1000 else requirements
-    
+    full_requirements = f"{truncated_requirements}\n\n{context_info}" if context_info else truncated_requirements
+
     architecture_prompt = f"""
 You are a SENIOR SOFTWARE ARCHITECT with 15+ years of experience designing enterprise-scale applications.
 
-**PROJECT REQUIREMENTS:**
-{truncated_requirements}
+**PROJECT REQUIREMENTS & CONTEXT:**
+{full_requirements}
 
 **SELECTED TECH STACK:**
 {tech_stack}
@@ -2789,7 +2812,8 @@ def chat_ui():
                         "current_group_index": 0,
                         "generated_groups": [],
                         "user_confirmations": {},
-                        "project_description": ""
+                        "project_description": "",
+                        "context_info": ""
                     }
                     st.success("🎉 Project marked as complete!")
                     st.rerun()
@@ -3078,6 +3102,10 @@ def chat_ui():
             # Get enhanced RAG context if available
             rag_context = get_rag_context(prompt) if RAG_AVAILABLE else []
             rag_files = [r['file'] for r in rag_context] if rag_context else []
+
+            # Build context information for workflow steps
+            context_info = build_context_info(rag_context)
+            st.session_state.project_generation_state["context_info"] = context_info
             
             # Enhanced RAG context for project generation agents
             if selected_agent in ["🚀 Project Generator", "🛠️ Code Assistant"]:
@@ -3123,9 +3151,10 @@ def chat_ui():
                     # Start the workflow - analyze requirements and suggest tech stack
                     requirements_text = f"{prompt}"
                     st.session_state.project_generation_state["requirements"] = requirements_text
-                    
+                    context_info = st.session_state.project_generation_state.get("context_info", "")
+
                     with st.spinner("🔍 Analyzing requirements and suggesting tech stack..."):
-                        tech_analysis = analyze_requirements_and_suggest_tech_stack(prompt, requirements_text)
+                        tech_analysis = analyze_requirements_and_suggest_tech_stack(prompt, context_info)
                     
                     # Update workflow state
                     st.session_state.project_generation_state["workflow_step"] = "tech_stack_selection"
@@ -3159,7 +3188,8 @@ def chat_ui():
                                 with st.spinner("🏗️ Designing project architecture..."):
                                     architecture = generate_project_architecture(
                                         st.session_state.project_generation_state["requirements"],
-                                        selected_option
+                                        selected_option,
+                                        st.session_state.project_generation_state.get("context_info", "")
                                     )
                                 
                                 # Check if architecture generation failed
@@ -3587,7 +3617,8 @@ For each file:
                             "current_group_index": 0,
                             "generated_groups": [],
                             "user_confirmations": {},
-                            "project_description": ""
+                            "project_description": "",
+                            "context_info": ""
                         }
                         
                         response = f"🔄 **Workflow Reset**\n\n"

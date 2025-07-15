@@ -53,7 +53,7 @@ def test_architecture_generation():
     
     try:
         from app_final import generate_project_architecture
-        result = generate_project_architecture(requirements, tech_stack)
+        result = generate_project_architecture(requirements, tech_stack, requirements)
         print("✅ Architecture generation function works")
         print(f"Result length: {len(result)} characters")
         return True
