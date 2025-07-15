@@ -1359,21 +1359,22 @@ def parse_file_groups_from_architecture(architecture_response):
     if not architecture_response or len(architecture_response.strip()) < 50:
         return []
     
-    # Look for the FILE GROUPS section with more flexible pattern
-    groups_pattern = r'Group \d+:\s*([^\n]+?)\s*\n\s*-\s*([^\n]+(?:\n\s*-\s*[^\n]+)*)'
+    # Look for group sections allowing file lists with or without leading dashes
+    groups_pattern = r'Group \d+:\s*([^\n]+?)\s*\n(.*?)(?=\n\s*Group \d+|$)'
     matches = re.findall(groups_pattern, architecture_response, re.DOTALL)
     
     file_groups = []
     for group_name, files_text in matches:
         # Extract file paths from the list
         files = []
-        for line in files_text.split('\n'):
+        for line in files_text.splitlines():
             line = line.strip()
+            if not line:
+                continue
             if line.startswith('-'):
-                # Remove "- " prefix and clean up
-                file_path = line[1:].strip()
-                if file_path:
-                    files.append(file_path)
+                line = line[1:].strip()
+            if line:
+                files.append(line)
         
         if files:
             file_groups.append({
@@ -1384,17 +1385,19 @@ def parse_file_groups_from_architecture(architecture_response):
     # If no groups found, try alternative pattern
     if not file_groups:
         # Look for any pattern that might contain file groups
-        alt_pattern = r'([A-Za-z\s&]+Files?|Configuration|Setup|Documentation|Tests?|Deployment)\s*:\s*\n\s*-\s*([^\n]+(?:\n\s*-\s*[^\n]+)*)'
+        alt_pattern = r'([A-Za-z\s&]+Files?|Configuration|Setup|Documentation|Tests?|Deployment)\s*:\s*\n(.*?)(?=\n\s*(?:[A-Za-z\s&]+Files?|Configuration|Setup|Documentation|Tests?|Deployment)\s*:|$)'
         alt_matches = re.findall(alt_pattern, architecture_response, re.DOTALL)
         
         for group_name, files_text in alt_matches:
             files = []
-            for line in files_text.split('\n'):
+            for line in files_text.splitlines():
                 line = line.strip()
+                if not line:
+                    continue
                 if line.startswith('-'):
-                    file_path = line[1:].strip()
-                    if file_path:
-                        files.append(file_path)
+                    line = line[1:].strip()
+                if line:
+                    files.append(line)
             
             if files:
                 file_groups.append({
